@@ -12,21 +12,26 @@ from .models import Post, Category, User, Comment
 NUMBER_OF_PAGINATOR_PAGES = 10
 
 
-def get_posts(**kwargs):
-    """Отфильтрованное получение постов"""
-    return Post.objects.select_related(
-        'category',
-        'location',
-        'author'
-    ).annotate(comment_count=Count('comments')
-               ).filter(**kwargs).order_by('-pub_date')
+def annotate_comments(queryset):
+    """Аннотирует queryset постов количеством комментариев"""
+    return queryset.annotate(comment_count=Count('comments'))
 
 
-def get_paginator(request, queryset,
-                  number_of_pages=NUMBER_OF_PAGINATOR_PAGES):
+def get_paginator(request, queryset, number_of_pages=NUMBER_OF_PAGINATOR_PAGES):
+    """Создает пагинатор для queryset"""
     paginator = Paginator(queryset, number_of_pages)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
+
+
+def get_posts(**kwargs):
+    """Отфильтрованное получение постов"""
+    posts = Post.objects.select_related(
+        'category',
+        'location',
+        'author'
+    ).filter(**kwargs).order_by('-pub_date')
+    return annotate_comments(posts)
 
 
 def index(request):
