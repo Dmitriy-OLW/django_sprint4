@@ -95,7 +95,7 @@ def edit_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
         return redirect('blog:post_detail', post_id)
-    form = PostForm(request.POST or None, instance=post)
+    form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
     if form.is_valid():
         form.save()
         return redirect('blog:post_detail', post_id)
@@ -109,11 +109,10 @@ def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
         return redirect('blog:post_detail', post_id)
-    form = PostForm(request.POST or None, instance=post)
     if request.method == 'POST':
         post.delete()
         return redirect('blog:index')
-    context = {'form': form}
+    context = {'post': post}
     return render(request, 'blog/create.html', context)
 
 
@@ -160,9 +159,7 @@ def delete_comment(request, post_id, comment_id):
 
 def profile(request, username):
     """Отображение страницы пользователя"""
-    profile = get_object_or_404(
-        User,
-        username=username)
+    profile = get_object_or_404(User, username=username)
     posts = get_posts(author=profile)
     if request.user != profile:
         posts = get_posts(
@@ -179,9 +176,7 @@ def profile(request, username):
 @login_required
 def edit_profile(request):
     """Редактирование страницы пользователя"""
-    profile = get_object_or_404(
-        User,
-        username=request.user)
+    profile = get_object_or_404(User, username=request.user)
     form = UserForm(request.POST or None, instance=profile)
     if form.is_valid():
         form.save()
