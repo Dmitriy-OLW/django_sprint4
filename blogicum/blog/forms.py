@@ -14,6 +14,7 @@ class PostForm(forms.ModelForm):
         exclude = ('author',)
         widgets = {
             'pub_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'is_published': forms.CheckboxInput(),
         }
         
     def __init__(self, *args, **kwargs):
